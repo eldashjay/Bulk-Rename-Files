@@ -1,0 +1,40 @@
+# Prompt for folder path
+$folderPath = Read-Host "Enter the folder path"
+
+# Check if the folder exists
+if (Test-Path -Path $folderPath -PathType Container) {
+    # Prompt for the new naming convention
+    $newNamingConvention = Read-Host "Enter the new naming convention (e.g., 'naming convention')"
+
+    # Get all files in the folder
+    $files = Get-ChildItem -Path $folderPath
+
+    # Initialize a counter
+    $count = 1
+
+    # Calculate the total number of files
+    $totalFiles = $files.Count
+
+    # Create a progress bar
+    $progress = 0
+    $status = "Renaming files: $count of $totalFiles"
+    Write-Progress -Activity "Renaming Files" -Status $status -PercentComplete $progress
+
+    # Rename each file using the new naming convention and counter
+    foreach ($file in $files) {
+        $newName = "${newNamingConvention}_$($count.ToString("00"))$($file.Extension)"
+        $newPath = Join-Path -Path $folderPath -ChildPath $newName
+        Rename-Item -Path $file.FullName -NewName $newName
+
+        # Update the progress bar
+        $progress = [math]::Round(($count / $totalFiles) * 100)
+        $status = "Renaming files: $count of $totalFiles"
+        Write-Progress -Activity "Renaming Files" -Status $status -PercentComplete $progress
+
+        $count++
+    }
+
+    Write-Host "Files in $folderPath have been renamed."
+} else {
+    Write-Host "Folder not found at '$folderPath'. Please make sure the folder exists."
+}
